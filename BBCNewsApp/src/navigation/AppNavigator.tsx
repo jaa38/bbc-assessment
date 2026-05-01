@@ -1,19 +1,33 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { DomainSelectorScreen } from '../screens/DomainSelectorScreen';
+import { ArticlesScreen } from '../screens/ArticlesScreen';
+import { Domain, SortOption } from '../types/news';
 
-import HomeScreen from '../screens/HomeScreen';
+export type RootStackParamList = {
+  DomainSelector: undefined;
+  Articles: {
+    domains: Domain[];
+    sortBy: SortOption;
+  };
+};
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const AppNavigator = () => {
+export const AppNavigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen
+          name="DomainSelector"
+          component={DomainSelectorScreen}
+        />
+        <Stack.Screen
+          name="Articles"
+          component={ArticlesScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 };
-
-export default AppNavigator;

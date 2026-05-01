@@ -1,6 +1,32 @@
 // src/types/news.ts
 
-// One news article from the API
+export type Domain =
+  | 'apple.com'
+  | 'bbc.com'
+  | 'ign.com'
+  | 'google.com'
+  | 'youtube.com'
+
+// Human readable labels for each domain
+// Like giving each Avenger a code name
+export const DOMAIN_LABELS: Record<Domain, string> = {
+  'apple.com': 'Apple',
+  'bbc.com': 'BBC',
+  'ign.com': 'IGN',
+  'google.com': 'Google',
+  'youtube.com': 'YouTube',
+}
+
+// All five domains in order
+export const ALL_DOMAINS: Domain[] = [
+  'apple.com',
+  'bbc.com',
+  'ign.com',
+  'google.com',
+  'youtube.com',
+]
+
+// One news article
 export type Article = {
   title: string
   description: string | null
@@ -8,6 +34,7 @@ export type Article = {
   content: string | null
   url: string
   source: {
+    id: string | null
     name: string
   }
 }
@@ -19,17 +46,13 @@ export type NewsApiResponse = {
   articles: Article[]
 }
 
-// The five domains the BBC want
-export type Domain =
-  | 'apple.com'
-  | 'bbc.com'
-  | 'ign.com'
-  | 'google.com'
-  | 'youtube.com'
+// Sort options — matches your SortToggle component
+export type SortOption = 'latest' | 'popular'
 
-// State of the articles fetch
+// The state of fetching articles
+// This is your discriminated union — like the Infinity Gauntlet states
 export type FetchState =
-  | {status: 'idle'}
-  | {status: 'loading'}
-  | {status: 'success'; articles: Article[]}
-  | {status: 'error'; message: string}
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; articles: Article[] }
+  | { status: 'error'; message: string }

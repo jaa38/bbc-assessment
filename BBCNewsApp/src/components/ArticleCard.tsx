@@ -1,107 +1,89 @@
-// src/components/ArticleCard.tsx
-
-import React from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  StyleProp,
-  ViewStyle,
-} from 'react-native';
-import { AppText } from './AppText';
-import { theme } from '../theme';
-
-interface Article {
-  title: string;
-  description?: string;
-  publishedAt: string;
-  source: string;
-}
+import React from 'react'
+import { View, StyleSheet } from 'react-native'
+import { AppText } from './AppText'
+import { theme } from '../theme'
+import { Article } from '../types/news'
 
 interface Props {
-  article: Article;
-  onPress?: () => void;
-  style?: StyleProp<ViewStyle>;
+  article: Article
 }
 
-export const ArticleCard = ({ article, onPress, style }: Props) => {
+const formatDate = (dateString: string): string => {
+  const now = new Date()
+  const published = new Date(dateString)
+  const diffMs = now.getTime() - published.getTime()
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffHours < 1) return 'Just now'
+  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
+  if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`
+  return published.toLocaleDateString()
+}
+
+export const ArticleCard = ({ article }: Props) => {
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${article.title}. ${
-        article.description ?? ''
-      }. Published ${formatDate(article.publishedAt)} from ${article.source}`}
-      accessibilityHint="Double tap to open article"
-      style={({ pressed }) => [
-        styles.container,
-        pressed ? styles.pressed : undefined,
-        style,
-      ]}
+    <View
+      style={styles.container}
+      accessible
+      accessibilityRole="none"
+      accessibilityLabel={article.title}
     >
-      {/* Source */}
-      <AppText variant="caption" style={styles.source}>
-        [{article.source}]
+      <AppText
+        variant="meta"
+        color={theme.colors.primary}
+        style={styles.source}
+      >
+        {article.source.name}
       </AppText>
 
-      {/* Title */}
-      <AppText variant="h2" numberOfLines={2} style={styles.title}>
+      <AppText variant="h3" style={styles.title}>
         {article.title}
       </AppText>
 
-      {/* Description */}
       {article.description ? (
-        <AppText variant="body" numberOfLines={3} style={styles.description}>
+        <AppText
+          variant="bodySmall"
+          color={theme.colors.textSecondary}
+          style={styles.description}
+          numberOfLines={3}
+        >
           {article.description}
         </AppText>
       ) : null}
 
-      {/* Date */}
-      <AppText variant="meta" style={styles.meta}>
+      <AppText
+        variant="caption"
+        color={theme.colors.textSecondary}
+        style={styles.time}
+      >
         {formatDate(article.publishedAt)}
       </AppText>
-    </Pressable>
-  );
-};
+
+      <View style={styles.divider} />
+    </View>
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
-    padding: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.md,
   },
-
-  pressed: {
-    opacity: 0.9,
-  },
-
   source: {
-    color: theme.colors.primary,
     marginBottom: theme.spacing.xs,
   },
-
   title: {
-    color: theme.colors.textPrimary,
     marginBottom: theme.spacing.sm,
   },
-
   description: {
-    color: theme.colors.textSecondary,
     marginBottom: theme.spacing.sm,
   },
-
-  meta: {
-    color: theme.colors.textSecondary,
+  time: {
+    marginBottom: theme.spacing.md,
   },
-});
-
-// 🧠 Helper function
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-
-  return date.toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-};
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+  },
+})
