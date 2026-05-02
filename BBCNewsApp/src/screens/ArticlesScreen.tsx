@@ -1,14 +1,13 @@
-// src/screens/ArticlesScreen.tsx
+/* eslint-disable react-native/no-inline-styles */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   FlatList,
-  StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -29,8 +28,6 @@ import {
 import { fetchArticles } from '../services/newsService';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
-
-// 🧠 Navigation Types
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'Articles'
@@ -41,8 +38,6 @@ type RouteProps = RouteProp<
   'Articles'
 >;
 
-
-// 🚀 Screen
 export const ArticlesScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
@@ -55,7 +50,6 @@ export const ArticlesScreen = () => {
     status: 'loading',
   });
 
-
   // 📡 Load Articles
   const loadArticles = useCallback(async () => {
     setFetchState({ status: 'loading' });
@@ -67,7 +61,6 @@ export const ArticlesScreen = () => {
         status: 'success',
         articles,
       });
-
     } catch (error) {
       console.error('Failed to fetch articles:', error);
 
@@ -78,12 +71,9 @@ export const ArticlesScreen = () => {
     }
   }, [domains, sortBy]);
 
-
-  // 🔄 Trigger Load
   useEffect(() => {
     loadArticles();
   }, [loadArticles]);
-
 
   // 🧠 Derived UI
   const domainLabels = domains
@@ -94,18 +84,38 @@ export const ArticlesScreen = () => {
     domains.length === 1 ? 'source' : 'sources'
   } selected`;
 
+  // ✅ SORT ARTICLES (MOST RECENT FIRST)
+  const sortedArticles =
+    fetchState.status === 'success'
+      ? [...fetchState.articles].sort((a, b) => {
+          return (
+            new Date(b.publishedAt).getTime() -
+            new Date(a.publishedAt).getTime()
+          );
+        })
+      : [];
 
-  // 🎨 UI
   return (
-    <SafeAreaView style={styles.container}>
-      
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: theme.colors.background,
+      }}
+    >
       {/* HEADER */}
-      <View style={styles.header}>
+      <View
+        style={{
+          paddingHorizontal: theme.spacing.md,
+          paddingVertical: theme.spacing.md,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.border,
+        }}
+      >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
           accessibilityLabel="Go back"
-          style={styles.backButton}
+          style={{ marginBottom: theme.spacing.sm }}
         >
           <AppText variant="body" color={theme.colors.textPrimary}>
             {'< Back'}
@@ -121,14 +131,19 @@ export const ArticlesScreen = () => {
         </AppText>
       </View>
 
-
       {/* SORT TOGGLE */}
       <SortToggle value={sortBy} onChange={setSortBy} />
 
-
       {/* LOADING */}
       {fetchState.status === 'loading' && (
-        <View style={styles.centred}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: theme.spacing.lg,
+          }}
+        >
           <ActivityIndicator
             size="large"
             color={theme.colors.primary}
@@ -137,14 +152,23 @@ export const ArticlesScreen = () => {
         </View>
       )}
 
-
       {/* ERROR */}
       {fetchState.status === 'error' && (
-        <View style={styles.centred}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: theme.spacing.lg,
+          }}
+        >
           <AppText
             variant="body"
             color={theme.colors.error}
-            style={styles.errorText}
+            style={{
+              textAlign: 'center',
+              marginBottom: theme.spacing.md,
+            }}
           >
             {fetchState.message}
           </AppText>
@@ -154,67 +178,29 @@ export const ArticlesScreen = () => {
             accessibilityRole="button"
             accessibilityLabel="Try again"
           >
-            <AppText
-              variant="label"
-              color={theme.colors.primary}
-            >
+            <AppText variant="label" color={theme.colors.primary}>
               Try again
             </AppText>
           </TouchableOpacity>
         </View>
       )}
 
-
       {/* SUCCESS */}
       {fetchState.status === 'success' && (
         <FlatList
-          data={fetchState.articles}
+          data={sortedArticles} // ✅ using sorted data
           keyExtractor={(item, index) =>
             `${item.url}-${index}`
           }
           renderItem={({ item }: { item: Article }) => (
             <ArticleCard article={item} />
           )}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={{
+            paddingBottom: theme.spacing.lg,
+          }}
           accessibilityLabel="Articles list"
         />
       )}
     </SafeAreaView>
   );
 };
-
-
-// 🎨 Styles
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-
-  header: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-
-  backButton: {
-    marginBottom: theme.spacing.sm,
-  },
-
-  centred: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.spacing.lg,
-  },
-
-  errorText: {
-    textAlign: 'center',
-    marginBottom: theme.spacing.md,
-  },
-
-  list: {
-    paddingBottom: theme.spacing.lg,
-  },
-});
