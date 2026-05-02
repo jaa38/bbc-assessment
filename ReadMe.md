@@ -1,242 +1,219 @@
-# 📱 BBC News App – Mobile Engineer Assessment
+# BBC News App
 
-A cross-platform mobile news application built with **React Native + TypeScript**, designed to deliver a fast, accessible, and scalable news-reading experience.
-
----
-
-## 🚀 Overview
-
-This application allows users to:
-
-* Select one or more news domains
-* View the **10 latest articles** from selected sources
-* Sort articles by **latest** or **most popular**
-
-The solution focuses on:
-
-* **Scalable architecture**
-* **Strong UX fundamentals**
-* **Accessibility-first design**
-* **Maintainable, testable code**
+A React Native application that displays the latest news articles from a selection of domains. Built as a technical assessment for BBC Studios.
 
 ---
 
-## ▶️ How to Run
+## What it does
 
-### 1. Clone the repository
+- Browse articles from five domains: Apple, BBC, IGN, Google, and YouTube
+- Select one or more domains to build a custom news feed
+- View the 10 latest articles per selection
+- Sort articles by latest or most popular
+- Accessible on iOS and Android
+
+---
+
+## Getting started
+
+### Requirements
+
+- Node 18 or higher
+- Xcode (for iOS)
+- Android Studio (for Android)
+- A News API key from [newsapi.org](https://newsapi.org)
+
+### Setup
+
+**1. Clone the repository**
 
 ```bash
-git clone https://github.com/jaa38/bbc-assessment.git
+git clone https://github.com/your-username/BBCNewsApp.git
 cd BBCNewsApp
 ```
 
----
-
-### 2. Install dependencies
+**2. Install dependencies**
 
 ```bash
 npm install
 ```
 
----
+**3. Add your API key**
 
-### 3. Start Metro bundler
+Copy the example env file and add your key:
 
 ```bash
-npx react-native start
+cp .env.example .env
 ```
 
----
+Open `.env` and replace the placeholder:
 
-### 4. Run on iOS
+```
+NEWS_API_KEY=your_api_key_here
+```
 
+**4. Install iOS dependencies**
+
+```bash
+cd ios && pod install && cd ..
+```
+
+**5. Run the app**
+
+iOS:
 ```bash
 npx react-native run-ios
 ```
 
----
-
-### 5. Run on Android
-
-Ensure Android Studio is installed and an emulator/device is running:
-
+Android:
 ```bash
 npx react-native run-android
 ```
 
 ---
 
-## ⚙️ Environment Setup Notes
-
-* Java **17+** required for Gradle
-* Android SDK must be configured
-
-Example:
+## Running tests
 
 ```bash
-export ANDROID_HOME=$HOME/Library/Android/sdk
+npm test
 ```
 
-If needed, create:
+The test suite covers:
 
-```
-android/local.properties
-```
-
-```bash
-sdk.dir=/Users/your-username/Library/Android/sdk
-```
+- `ArticleCard` — renders title, source, description, and relative date correctly
+- `DomainSelectorScreen` — chip selection, counter updates, navigation on submit
+- `newsService` — API call parameters, domain joining, sort mapping
 
 ---
 
-## 🧱 Architecture
+## Architecture decisions
 
-The app follows a **modular, domain-driven structure**:
+### Feature-based folder structure
 
 ```
 src/
-├── components/     # Reusable UI components
-├── screens/        # Screen-level UI
-├── navigation/     # Navigation setup
-├── services/       # API layer
-├── theme/          # Design system (colors, spacing, typography)
-├── types/          # Shared TypeScript types
+├── components/       # Reusable UI components
+├── screens/          # Full screens
+├── services/         # API layer
+├── navigation/       # Navigation config
+├── theme/            # Design tokens
+└── types/            # TypeScript types
 ```
 
-### Key Decisions
+All UI logic lives in screens. All data fetching lives in services. Components know nothing about the API or navigation.
 
-* **Separation of concerns**: UI, navigation, and data-fetching are decoupled
-* **Design system**: Centralised theme ensures consistency and scalability
-* **Typed navigation**: Prevents runtime navigation errors
-* **Discriminated unions (`FetchState`)**: Ensures safe async state handling
-* **Reusable components**: Button, DomainChip, SortToggle, ArticleCard
+### TypeScript throughout
 
----
+Strict mode is enabled. Every component prop, API response, and navigation param is typed.
 
-## ⚖️ Trade-offs
+The most important type in the app is `FetchState` — a discriminated union that makes every possible state of an API call explicit:
 
-* No global state management (kept simple using React hooks)
-* Inline styles used in places for speed over strict consistency
-* No caching layer (simpler implementation, no offline support)
-* Sorting handled partly in UI for clarity over abstraction
+```typescript
+type FetchState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; articles: Article[] }
+  | { status: 'error'; message: string }
+```
 
----
+The TypeScript compiler forces every state to be handled. Unhandled states are caught before the app runs, not when a user encounters them.
 
-## ♿ Accessibility
+### Axios for API calls
 
-Accessibility was considered throughout:
+Axios is used instead of `fetch` for cleaner error handling and more readable request configuration. The service layer is kept thin — one function, one responsibility.
 
-* Proper roles (`button`, `tab`, `list`)
-* Screen reader labels and hints
-* Selected/disabled states exposed
-* Dynamic font scaling enabled
-* Clear visual feedback for interactions
+The `domains` parameter accepts multiple values joined by comma, which maps directly to the News API's `everything` endpoint and enables multi-domain selection in a single request.
 
----
+### Design system
 
-## 🧪 Testing
+A token-based design system covers colours, spacing, radius, and typography. Every value is defined once and referenced throughout. Changing the primary colour updates every component that uses it.
 
-Testing is implemented using:
+### Accessibility
 
-* **Jest**
-* **@testing-library/react-native**
-
-### Covered
-
-* Component rendering (ArticleCard, DomainChip)
-* User interactions (selecting domains, toggling sort)
-* Navigation flow (Domain → Articles screen)
-* API calls (mocked with axios)
-* Error handling (network failure scenarios)
-
-### Testing Strategy
-
-This project focuses on unit and component testing as required by the brief.
-
-For production environments, I would extend this with **end-to-end testing (e.g. Detox)** to validate full user flows across devices.
+- `accessibilityRole` on every interactive element
+- `accessibilityLabel` on all buttons and chips
+- `accessibilityState` on chips to communicate selected state to screen readers
+- `accessibilityLiveRegion="polite"` on the selection counter so screen readers announce changes automatically
+- `accessibilityLabel` on the loading indicator
+- Minimum touch target height of 36–48pt on all interactive elements
 
 ---
 
-## ✨ Features
+## Assumptions and trade-offs
 
-### Domain Selection
+**No pagination** — The task specifies 10 articles. Infinite scroll was not implemented to keep the scope focused.
 
-* Multi-select chips
-* Real-time selection feedback
-* Disabled CTA when no selection
+**No offline support** — Articles are fetched fresh on every navigation to the Articles screen. Caching was not added as it was not in the requirements.
 
-### Article Feed
+**Sort resets on back navigation** — When a user returns to the Domain Selector and navigates forward again, sort resets to Latest. This is intentional — a fresh selection should start with the default sort.
 
-* Displays latest articles
-* Handles missing data safely
-* Clean, readable layout
+**System font used instead of Inter** — Inter requires manual font linking in bare React Native which adds significant setup complexity. The system font (San Francisco on iOS, Roboto on Android) provides the same clean aesthetic with zero configuration overhead.
 
-### Sorting
-
-* Toggle between **Latest** and **Popular**
-
-### UI States
-
-* Loading indicator
-* Error state with retry
-* Success state with list rendering
+**News API free tier** — The free tier allows 100 requests per day and restricts some endpoints. Articles older than 30 days are not available. The `everything` endpoint is used as recommended in the task brief.
 
 ---
 
-## 🔌 API
+## Known limitations and next steps
 
-* Uses **NewsAPI (Everything endpoint)**
-* Filters by selected domains
-* Supports sorting
-* Handles API and network errors gracefully
+**Known limitations**
 
----
+- The News API free tier limits requests to 100 per day
+- Some domains return fewer than 10 articles depending on recent publishing activity
+- Content field from the API is truncated at 200 characters on the free tier
 
-## ⚠️ Known Limitations
+**Next steps with more time**
 
-* No caching (articles reload on each visit)
-* No pagination (limited to 10 articles)
-* No offline support
-* Sorting partially handled client-side
-
----
-
-## ⚡ Performance Considerations
-
-* `FlatList` used for efficient list rendering
-* Components structured to support memoization if scaling increases
+- Add article detail screen with full content and a link to the original article
+- Implement pull-to-refresh on the articles list
+- Add skeleton loading screens instead of a spinner
+- Persist selected domains between sessions using AsyncStorage
+- Add Detox end-to-end tests for the full user journey
+- Set up CI with GitHub Actions to run tests on every pull request
 
 ---
 
-## 📈 Future Improvements
+## Project structure
 
-* Caching & offline mode
-* Pull-to-refresh
-* Bookmarking articles
-* Dark mode support
-* Pagination / infinite scroll
-* Analytics integration
-* End-to-end testing (Detox)
+```
+BBCNewsApp/
+├── __mocks__/
+│   └── env.js                    # Mock API key for tests
+├── __tests__/
+│   ├── ArticleCard.test.tsx
+│   ├── DomainSelectorScreen.test.tsx
+│   └── newsService.test.ts
+├── src/
+│   ├── components/
+│   │   ├── AppText.tsx            # Typography component
+│   │   ├── ArticleCard.tsx        # Single article display
+│   │   ├── Button.tsx             # Primary and secondary button
+│   │   ├── DomainChip.tsx         # Selectable domain pill
+│   │   └── SortToggle.tsx         # Latest / Popular toggle
+│   ├── navigation/
+│   │   └── AppNavigator.tsx       # Stack navigator with typed params
+│   ├── screens/
+│   │   ├── DomainSelectorScreen.tsx
+│   │   └── ArticlesScreen.tsx
+│   ├── services/
+│   │   └── newsService.ts         # Axios API calls
+│   ├── theme/
+│   │   ├── colors.ts
+│   │   ├── index.ts
+│   │   ├── radius.ts
+│   │   ├── spacing.ts
+│   │   ├── textStyles.ts
+│   │   └── typography.ts
+│   └── types/
+│       ├── env.d.ts
+│       └── news.ts                # All TypeScript types
+├── .env.example
+├── App.tsx
+├── babel.config.js
+└── jest.config.js
+```
 
 ---
 
-## 🧠 Reflection
+## Feedback on the task
 
-This project focused on:
-
-* Clean and scalable architecture
-* Strong user experience fundamentals
-* Accessibility and inclusivity
-* Maintainable and testable code
-
----
-
-## 🙌 Conclusion
-
-This application demonstrates:
-
-* Solid React Native engineering principles
-* Thoughtful UX and accessibility design
-* A scalable and extensible architecture
-
-Built with a focus on **clarity, reliability, and real-world maintainability**.
+The task was well scoped and genuinely interesting to build. The hint about the `domains` parameter in the News API docs was helpful — it pointed toward the multi-select architecture cleanly. The biggest challenge was the bare React Native setup on macOS, particularly the CocoaPods and Ruby version dependencies. Given more time I would add a Detail screen and Detox end-to-end tests.
