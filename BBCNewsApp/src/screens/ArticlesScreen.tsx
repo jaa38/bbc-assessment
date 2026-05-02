@@ -1,16 +1,19 @@
-/* eslint-disable react-native/no-inline-styles */
-
 /**
- * 📄 ArticlesScreen
+ * @file ArticlesScreen.tsx
  *
- * Displays a list of news articles based on selected domains.
+ * Screen responsible for displaying a list of articles
+ * based on selected domains and sort preference.
  *
  * Responsibilities:
  * - Fetch articles from API
- * - Handle loading, success, and error states
- * - Allow sorting (latest vs popular)
- * - Ensure articles are displayed in most recent order
- * - Provide accessible UI for all users
+ * - Handle loading, error, and success states
+ * - Allow sorting (latest / popular)
+ * - Display articles in a list
+ *
+ * Design Principles:
+ * - Clear separation of UI states
+ * - Controlled data fetching
+ * - Accessible UI elements
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -41,10 +44,9 @@ import {
 import { fetchArticles } from '../services/newsService';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
+
 /**
- * 🔗 Navigation typing
- *
- * Ensures type safety when navigating between screens.
+ * 🧠 Navigation typing
  */
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -56,43 +58,41 @@ type RouteProps = RouteProp<
   'Articles'
 >;
 
+
 /**
- * 🚀 ArticlesScreen Component
+ * 📰 ArticlesScreen Component
  */
 export const ArticlesScreen = () => {
+  /**
+   * 🧭 Navigation + route
+   */
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
 
   /**
-   * 📥 Params passed from DomainSelectorScreen
+   * 📥 Params from previous screen
    */
   const { domains, sortBy: initialSort } = route.params;
 
   /**
-   * 🔄 State: current sort option
+   * 🔄 Sort state
    */
   const [sortBy, setSortBy] = useState<SortOption>(initialSort);
 
   /**
-   * 📊 State: fetch lifecycle
-   *
-   * Uses discriminated union:
-   * - loading
-   * - success
-   * - error
+   * 📡 Fetch state (loading | success | error)
    */
   const [fetchState, setFetchState] = useState<FetchState>({
     status: 'loading',
   });
 
+
   /**
-   * 📡 loadArticles
+   * 🚀 Load articles from API
    *
-   * Fetches articles from API and updates UI state.
-   *
-   * - Shows loading spinner
-   * - Handles success response
-   * - Gracefully handles errors
+   * - Sets loading state
+   * - Fetches articles
+   * - Handles success + error
    */
   const loadArticles = useCallback(async () => {
     setFetchState({ status: 'loading' });
@@ -114,46 +114,29 @@ export const ArticlesScreen = () => {
     }
   }, [domains, sortBy]);
 
+
   /**
-   * 🔄 Trigger fetch on mount and when dependencies change
+   * 🔄 Trigger fetch on mount or dependency change
    */
   useEffect(() => {
     loadArticles();
   }, [loadArticles]);
 
-  /**
-   * 🧠 Derived UI data
-   */
 
-  // Human-readable domain names (e.g. "BBC, Apple")
+  /**
+   * 🧠 Derived UI values
+   */
   const domainLabels = domains
     .map((d) => DOMAIN_LABELS[d])
     .join(', ');
 
-  // Subtitle showing number of selected sources
   const headerSubtitle = `${domains.length} ${
     domains.length === 1 ? 'source' : 'sources'
   } selected`;
 
-  /**
-   * 🕒 Sort Articles (Most Recent First)
-   *
-   * Even though API supports sorting,
-   * we enforce correct order on client side
-   * for consistency and reliability.
-   */
-  const sortedArticles =
-    fetchState.status === 'success'
-      ? [...fetchState.articles].sort((a, b) => {
-          return (
-            new Date(b.publishedAt).getTime() -
-            new Date(a.publishedAt).getTime()
-          );
-        })
-      : [];
 
   /**
-   * 🎨 UI Rendering
+   * 🎨 Render UI
    */
   return (
     <SafeAreaView
@@ -162,7 +145,7 @@ export const ArticlesScreen = () => {
         backgroundColor: theme.colors.background,
       }}
     >
-      {/* ================= HEADER ================= */}
+      {/* 🧭 HEADER */}
       <View
         style={{
           paddingHorizontal: theme.spacing.md,
@@ -171,7 +154,7 @@ export const ArticlesScreen = () => {
           borderBottomColor: theme.colors.border,
         }}
       >
-        {/* Back button */}
+        {/* 🔙 Back Button */}
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
@@ -183,21 +166,21 @@ export const ArticlesScreen = () => {
           </AppText>
         </TouchableOpacity>
 
-        {/* Selected sources count */}
+        {/* 📊 Selected domains count */}
         <AppText variant="meta" color={theme.colors.textSecondary}>
           {headerSubtitle}
         </AppText>
 
-        {/* Selected domain names */}
+        {/* 🏷️ Selected domain labels */}
         <AppText variant="caption" color={theme.colors.textSecondary}>
           {domainLabels}
         </AppText>
       </View>
 
-      {/* ================= SORT ================= */}
+      {/* 🔄 SORT TOGGLE */}
       <SortToggle value={sortBy} onChange={setSortBy} />
 
-      {/* ================= LOADING STATE ================= */}
+      {/* ⏳ LOADING STATE */}
       {fetchState.status === 'loading' && (
         <View
           style={{
@@ -215,7 +198,7 @@ export const ArticlesScreen = () => {
         </View>
       )}
 
-      {/* ================= ERROR STATE ================= */}
+      {/* ❌ ERROR STATE */}
       {fetchState.status === 'error' && (
         <View
           style={{
@@ -236,6 +219,7 @@ export const ArticlesScreen = () => {
             {fetchState.message}
           </AppText>
 
+          {/* 🔁 Retry Button */}
           <TouchableOpacity
             onPress={loadArticles}
             accessibilityRole="button"
@@ -248,19 +232,28 @@ export const ArticlesScreen = () => {
         </View>
       )}
 
-      {/* ================= SUCCESS STATE ================= */}
+      {/* ✅ SUCCESS STATE */}
       {fetchState.status === 'success' && (
         <FlatList
-          data={sortedArticles} // ✅ Ensures correct order
+          data={fetchState.articles}
           keyExtractor={(item, index) =>
             `${item.url}-${index}`
           }
+
+          /**
+           * 📰 Render each article
+           */
           renderItem={({ item }: { item: Article }) => (
             <ArticleCard article={item} />
           )}
+
+          /**
+           * 📐 Spacing
+           */
           contentContainerStyle={{
             paddingBottom: theme.spacing.lg,
           }}
+
           accessibilityLabel="Articles list"
         />
       )}
