@@ -1,72 +1,82 @@
 # 📱 BBC News App – Mobile Engineer Assessment
 
-A cross-platform mobile news application built with **React Native** that allows users to:
-
-* Select preferred news domains
-* View the latest articles from selected sources
-* Sort articles by latest or most popular
+A cross-platform mobile news application built with **React Native + TypeScript**, designed to deliver a fast, accessible, and scalable news-reading experience.
 
 ---
 
 ## 🚀 Overview
 
-This application focuses on **clarity, performance, and accessibility**, delivering a clean and intuitive news-reading experience.
+This application allows users to:
 
-The goal was to design and build a scalable mobile app that balances:
+* Select preferred news domains
+* Browse articles from selected sources
+* Sort content by **latest** or **most popular**
 
-* User needs (discoverability, readability)
-* Business goals (content engagement)
-* Technical constraints (performance, maintainability)
+The focus of this solution is on:
 
----
-
-## ✨ Features
-
-### 🏷️ Domain Selection
-
-* Multi-select domain chips
-* Clear selection feedback
-* Disabled CTA until selection is made
-
-### 📰 Article Feed
-
-* Displays latest 10 articles per selected domain
-* Clean, scannable article cards
-* Graceful handling of missing content
-
-### 🔄 Sorting
-
-* Toggle between:
-
-  * **Latest**
-  * **Most Popular**
-* Instant UI feedback
-
-### ⚠️ States Handling
-
-* Loading (ActivityIndicator)
-* Error state with retry
-* Empty state messaging
+* **Scalable architecture**
+* **Strong UX fundamentals**
+* **Accessibility-first design**
+* **Maintainable, testable code**
 
 ---
 
-## ♿ Accessibility
+## ▶️ How to Run
 
-Accessibility was considered from the ground up:
+### 1. Clone the repository
 
-* Semantic roles (`button`, `tab`, `list`)
-* Screen reader support via `accessibilityLabel`
-* Minimum touch targets (44px)
-* Dynamic text scaling (`allowFontScaling`)
-* Clear visual states (selected, disabled)
+git clone https://github.com/jaa38/bbc-assessment.git
+cd BBCNewsApp
 
 ---
 
-## 🧱 Architecture
+### 2. Install dependencies
 
-The app follows a **modular and scalable structure**:
+npm install
 
-```
+---
+
+### 3. Start Metro bundler
+
+npx react-native start
+
+---
+
+### 4. Run on iOS
+
+npx react-native run-ios
+
+---
+
+### 5. Run on Android
+
+Ensure Android Studio is installed and emulator/device is running
+
+npx react-native run-android
+
+---
+
+## ⚙️ Environment Setup Notes
+
+* Java **17+** required for Gradle
+* Android SDK must be configured
+
+Example:
+
+export ANDROID_HOME=$HOME/Library/Android/sdk
+
+If needed:
+
+android/local.properties
+
+sdk.dir=/Users/your-username/Library/Android/sdk
+
+---
+
+## 🧱 Architecture Decisions
+
+The app follows a **modular structure**:
+
 src/
 ├── components/
 ├── screens/
@@ -74,157 +84,117 @@ src/
 ├── services/
 ├── theme/
 ├── types/
-```
 
 ### Key Decisions
 
-* **Separation of concerns**: UI, logic, and data are clearly split
-* **Reusable components**: Button, DomainChip, SortToggle, ArticleCard
-* **Typed navigation** using React Navigation + TypeScript
-* **Centralised design system** (typography, spacing, colors)
+* Separation of concerns (UI / logic / data)
+* Reusable components (Button, Chip, Toggle, Card)
+* Typed navigation (TypeScript)
+* Centralised design system
 
 ---
 
-## 🎨 Design System
+## ⚖️ Trade-offs
 
-A lightweight design system was implemented to ensure consistency:
-
-* Typography scale (H1–Caption)
-* 8pt spacing system
-* Consistent color tokens
-* Reusable UI components
-
-This improves:
-
-* Maintainability
-* Developer velocity
-* Visual consistency
+* No global state (kept simple with hooks)
+* Inline styles for speed (less abstraction)
+* No caching (simpler but no offline support)
+* No UI library (more control, more effort)
 
 ---
 
-## ⚙️ Tech Stack
+## ♿ Accessibility
 
-* React Native
-* TypeScript
-* React Navigation (Native Stack)
-* Custom design system (no UI library)
+* Accessibility roles (button, tab, list)
+* Screen reader labels
+* Selected/disabled states
+* Dynamic font scaling
+* Minimum touch targets
+* Clear visual states
 
 ---
 
-## 🔌 API Integration
+## 🧪 Testing
 
-Articles are fetched via a service layer:
+Using:
 
-```
-services/newsService.ts
-```
+* Jest
+* @testing-library/react-native
 
-Features:
+### Covered
 
+* Component rendering
+* User interaction
+* Navigation
+* API calls
+* Error handling
+
+---
+
+## ✨ Features
+
+### Domain Selection
+
+* Multi-select chips
+* Live feedback
+* Disabled CTA
+
+### Article Feed
+
+* Latest articles
+* Clean UI
+* Handles missing data
+
+### Sorting
+
+* Latest / Popular toggle
+
+### States
+
+* Loading
+* Error (retry)
+* Success
+
+---
+
+## 🔌 API
+
+* NewsAPI integration
 * Domain filtering
 * Sorting support
 * Error handling
-* Async state management
-
----
-
-## 📦 Installation
-
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/jaa38/bbc-assessment.git
-cd BBCNewsApp
-```
-
----
-
-### 2. Install dependencies
-
-```bash
-npm install
-```
-
----
-
-### 3. Start Metro
-
-```bash
-npx react-native start
-```
-
----
-
-### 4. Run on Android
-
-Ensure:
-
-* Android Studio installed
-* Emulator running OR device connected
-
-```bash
-npx react-native run-android
-```
-
----
-
-## 🛠️ Environment Setup Notes
-
-* Java 17 required for Gradle
-* Android SDK configured via:
-
-  * `ANDROID_HOME`
-  * `local.properties`
-
----
-
-## 🧪 Testing Approach
-
-Manual testing was conducted for:
-
-* Domain selection flow
-* Navigation between screens
-* Sorting behaviour
-* Error and loading states
 
 ---
 
 ## 📈 Future Improvements
 
-Given more time, I would:
-
-* Add caching for offline support
-* Implement pull-to-refresh
-* Add bookmarking/favorites
-* Improve analytics tracking (engagement metrics)
-* Add unit and integration tests
+* Caching
+* Pull to refresh
+* Bookmarks
+* Offline mode
+* Analytics
+* Dark mode
+* E2E tests
 
 ---
 
 ## 🧠 Reflection
 
-This project focused on:
+Focus areas:
 
-* Building a clean, scalable architecture
-* Delivering strong UX fundamentals
-* Ensuring accessibility is not an afterthought
-
-Special attention was given to:
-
-* Reducing friction in user flows
-* Maintaining consistent UI patterns
-* Writing maintainable and readable code
+* Clean architecture
+* UX clarity
+* Accessibility
+* Maintainability
 
 ---
 
 ## 🙌 Conclusion
 
-This solution demonstrates a balance of:
+This project demonstrates:
 
-* Product thinking
-* UX awareness
-* Engineering quality
+* Strong frontend engineering
+* Good UX thinking
+* Scalable structure
 
-It is designed to be easily extendable and production-ready.
-
----
+Built to be **production-ready and extendable**.
