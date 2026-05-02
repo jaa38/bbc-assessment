@@ -8,11 +8,11 @@ A cross-platform mobile news application built with **React Native + TypeScript*
 
 This application allows users to:
 
-* Select preferred news domains
-* Browse articles from selected sources
-* Sort content by **latest** or **most popular**
+* Select one or more news domains
+* View the **10 latest articles** from selected sources
+* Sort articles by **latest** or **most popular**
 
-The focus of this solution is on:
+The solution focuses on:
 
 * **Scalable architecture**
 * **Strong UX fundamentals**
@@ -25,34 +25,44 @@ The focus of this solution is on:
 
 ### 1. Clone the repository
 
+```bash
 git clone https://github.com/jaa38/bbc-assessment.git
 cd BBCNewsApp
+```
 
 ---
 
 ### 2. Install dependencies
 
+```bash
 npm install
+```
 
 ---
 
 ### 3. Start Metro bundler
 
+```bash
 npx react-native start
+```
 
 ---
 
 ### 4. Run on iOS
 
+```bash
 npx react-native run-ios
+```
 
 ---
 
 ### 5. Run on Android
 
-Ensure Android Studio is installed and emulator/device is running
+Ensure Android Studio is installed and an emulator/device is running:
 
+```bash
 npx react-native run-android
+```
 
 ---
 
@@ -63,71 +73,87 @@ npx react-native run-android
 
 Example:
 
+```bash
 export ANDROID_HOME=$HOME/Library/Android/sdk
+```
 
-If needed:
+If needed, create:
 
+```
 android/local.properties
+```
 
+```bash
 sdk.dir=/Users/your-username/Library/Android/sdk
+```
 
 ---
 
-## 🧱 Architecture Decisions
+## 🧱 Architecture
 
-The app follows a **modular structure**:
+The app follows a **modular, domain-driven structure**:
 
+```
 src/
-├── components/
-├── screens/
-├── navigation/
-├── services/
-├── theme/
-├── types/
+├── components/     # Reusable UI components
+├── screens/        # Screen-level UI
+├── navigation/     # Navigation setup
+├── services/       # API layer
+├── theme/          # Design system (colors, spacing, typography)
+├── types/          # Shared TypeScript types
+```
 
 ### Key Decisions
 
-* Separation of concerns (UI / logic / data)
-* Reusable components (Button, Chip, Toggle, Card)
-* Typed navigation (TypeScript)
-* Centralised design system
+* **Separation of concerns**: UI, navigation, and data-fetching are decoupled
+* **Design system**: Centralised theme ensures consistency and scalability
+* **Typed navigation**: Prevents runtime navigation errors
+* **Discriminated unions (`FetchState`)**: Ensures safe async state handling
+* **Reusable components**: Button, DomainChip, SortToggle, ArticleCard
 
 ---
 
 ## ⚖️ Trade-offs
 
-* No global state (kept simple with hooks)
-* Inline styles for speed (less abstraction)
-* No caching (simpler but no offline support)
-* No UI library (more control, more effort)
+* No global state management (kept simple using React hooks)
+* Inline styles used in places for speed over strict consistency
+* No caching layer (simpler implementation, no offline support)
+* Sorting handled partly in UI for clarity over abstraction
 
 ---
 
 ## ♿ Accessibility
 
-* Accessibility roles (button, tab, list)
-* Screen reader labels
-* Selected/disabled states
-* Dynamic font scaling
-* Minimum touch targets
-* Clear visual states
+Accessibility was considered throughout:
+
+* Proper roles (`button`, `tab`, `list`)
+* Screen reader labels and hints
+* Selected/disabled states exposed
+* Dynamic font scaling enabled
+* Clear visual feedback for interactions
 
 ---
 
 ## 🧪 Testing
 
-Using:
+Testing is implemented using:
 
-* Jest
-* @testing-library/react-native
+* **Jest**
+* **@testing-library/react-native**
 
 ### Covered
 
-* Component rendering
-* User interaction
-* Navigation
-* API calls
-* Error handling
+* Component rendering (ArticleCard, DomainChip)
+* User interactions (selecting domains, toggling sort)
+* Navigation flow (Domain → Articles screen)
+* API calls (mocked with axios)
+* Error handling (network failure scenarios)
+
+### Testing Strategy
+
+This project focuses on unit and component testing as required by the brief.
+
+For production environments, I would extend this with **end-to-end testing (e.g. Detox)** to validate full user flows across devices.
 
 ---
 
@@ -136,65 +162,81 @@ Using:
 ### Domain Selection
 
 * Multi-select chips
-* Live feedback
-* Disabled CTA
+* Real-time selection feedback
+* Disabled CTA when no selection
 
 ### Article Feed
 
-* Latest articles
-* Clean UI
-* Handles missing data
+* Displays latest articles
+* Handles missing data safely
+* Clean, readable layout
 
 ### Sorting
 
-* Latest / Popular toggle
+* Toggle between **Latest** and **Popular**
 
-### States
+### UI States
 
-* Loading
-* Error (retry)
-* Success
+* Loading indicator
+* Error state with retry
+* Success state with list rendering
 
 ---
 
 ## 🔌 API
 
-* NewsAPI integration
-* Domain filtering
-* Sorting support
-* Error handling
+* Uses **NewsAPI (Everything endpoint)**
+* Filters by selected domains
+* Supports sorting
+* Handles API and network errors gracefully
+
+---
+
+## ⚠️ Known Limitations
+
+* No caching (articles reload on each visit)
+* No pagination (limited to 10 articles)
+* No offline support
+* Sorting partially handled client-side
+
+---
+
+## ⚡ Performance Considerations
+
+* `FlatList` used for efficient list rendering
+* Components structured to support memoization if scaling increases
 
 ---
 
 ## 📈 Future Improvements
 
-* Caching
-* Pull to refresh
-* Bookmarks
-* Offline mode
-* Analytics
-* Dark mode
-* E2E tests
+* Caching & offline mode
+* Pull-to-refresh
+* Bookmarking articles
+* Dark mode support
+* Pagination / infinite scroll
+* Analytics integration
+* End-to-end testing (Detox)
 
 ---
 
 ## 🧠 Reflection
 
-Focus areas:
+This project focused on:
 
-* Clean architecture
-* UX clarity
-* Accessibility
-* Maintainability
+* Clean and scalable architecture
+* Strong user experience fundamentals
+* Accessibility and inclusivity
+* Maintainable and testable code
 
 ---
 
 ## 🙌 Conclusion
 
-This project demonstrates:
+This application demonstrates:
 
-* Strong frontend engineering
-* Good UX thinking
-* Scalable structure
+* Solid React Native engineering principles
+* Thoughtful UX and accessibility design
+* A scalable and extensible architecture
 
-Built to be **production-ready and extendable**.
+Built with a focus on **clarity, reliability, and real-world maintainability**.
