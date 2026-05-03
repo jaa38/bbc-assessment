@@ -207,7 +207,6 @@ All values are centralised and reused across components.
 
 **Next steps with more time**
 
-- Add article detail screen with full content and a link to the original article
 - Implement pull-to-refresh on the articles list
 - Add skeleton loading screens instead of a spinner
 - Persist selected domains between sessions using AsyncStorage
