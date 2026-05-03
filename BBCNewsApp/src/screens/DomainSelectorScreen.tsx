@@ -19,89 +19,49 @@
  * - Disable CTA when no selection (prevent invalid navigation)
  */
 
-import React, { useState, useCallback } from 'react';
-import { Pressable, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { AppNavigationProp } from '../navigation/types';
+import React, { useState, useCallback } from 'react'
+import { View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
+import { AppNavigationProp } from '../navigation/types'
 
-import { AppText } from '../components/AppText';
-import { DomainChip } from '../components/DomainChip';
-import { Button } from '../components/Button';
-import { theme } from '../theme';
+import { AppText } from '../components/AppText'
+import { DomainChip } from '../components/DomainChip'
+import { Button } from '../components/Button'
+import { theme } from '../theme'
 
-import { Domain, ALL_DOMAINS, DOMAIN_LABELS } from '../types/news';
+import { Domain, ALL_DOMAINS, DOMAIN_LABELS } from '../types/news'
 
-/**
- * 🧠 Navigation Type
- *
- * Ensures type-safe navigation:
- * - Correct route names
- * - Correct params passed
- */
-type NavigationProp = AppNavigationProp<'DomainSelector'>;
+type NavigationProp = AppNavigationProp<'DomainSelector'>
 
-/**
- * 🚀 DomainSelectorScreen Component
- */
 export const DomainSelectorScreen = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp>()
 
-  /**
-   * 🎛️ State: Selected Domains
-   *
-   * Stores list of selected domain identifiers
-   */
-  const [selectedDomains, setSelectedDomains] = useState<Domain[]>([]);
+  const [selectedDomains, setSelectedDomains] = useState<Domain[]>([])
 
-  /**
-   * 🔁 Toggle Domain Selection
-   *
-   * Behavior:
-   * - If domain is selected → remove it
-   * - If not selected → add it
-   *
-   * Why:
-   * - Supports multi-select interaction
-   * - Keeps logic simple and predictable
-   */
   const toggleDomain = useCallback((domain: Domain) => {
     setSelectedDomains(prev => {
-      const isSelected = prev.includes(domain);
+      const isSelected = prev.includes(domain)
+      return isSelected
+        ? prev.filter(d => d !== domain)
+        : [...prev, domain]
+    })
+  }, [])
 
-      return isSelected ? prev.filter(d => d !== domain) : [...prev, domain];
-    });
-  }, []);
-
-  /**
-   * 🚀 Navigate to Articles Screen
-   *
-   * Passes:
-   * - Selected domains
-   * - Default sort option ("latest")
-   */
   const handleViewArticles = useCallback(() => {
     navigation.navigate('Articles', {
       domains: selectedDomains,
       sortBy: 'latest',
-    });
-  }, [navigation, selectedDomains]);
+    })
+  }, [navigation, selectedDomains])
 
-  /**
-   * 🧠 Derived UI State
-   *
-   * Displays user feedback based on selection count
-   */
   const selectionText =
     selectedDomains.length === 0
       ? 'No source selected'
       : selectedDomains.length === 1
       ? '1 source selected'
-      : `${selectedDomains.length} sources selected`;
+      : `${selectedDomains.length} sources selected`
 
-  /**
-   * 🎨 Render
-   */
   return (
     <SafeAreaView
       style={{
@@ -109,7 +69,7 @@ export const DomainSelectorScreen = () => {
         backgroundColor: theme.colors.background,
       }}
     >
-      {/* 🧭 HEADER */}
+      {/* HEADER */}
       <View
         style={{
           flexDirection: 'row',
@@ -121,7 +81,6 @@ export const DomainSelectorScreen = () => {
           borderBottomColor: theme.colors.border,
         }}
       >
-        {/* 🎯 Visual Accent */}
         <View
           style={{
             width: 4,
@@ -130,12 +89,10 @@ export const DomainSelectorScreen = () => {
             backgroundColor: theme.colors.primary,
           }}
         />
-
-        {/* 📰 App Title */}
         <AppText variant="h2">News Reader</AppText>
       </View>
 
-      {/* 📦 CONTENT */}
+      {/* CONTENT */}
       <View
         style={{
           flex: 1,
@@ -143,12 +100,13 @@ export const DomainSelectorScreen = () => {
           paddingTop: theme.spacing.lg,
         }}
       >
-        {/* 🧠 Screen Title */}
-        <AppText variant="h1" style={{ marginBottom: theme.spacing.sm }}>
+        <AppText
+          variant="h1"
+          style={{ marginBottom: theme.spacing.sm }}
+        >
           Pick your sources
         </AppText>
 
-        {/* 📝 Description */}
         <AppText
           variant="body"
           color={theme.colors.textSecondary}
@@ -157,7 +115,7 @@ export const DomainSelectorScreen = () => {
           Select one or more publishers to build your feed.
         </AppText>
 
-        {/* 🧩 DOMAIN CHIPS */}
+        {/* DOMAIN CHIPS */}
         <View
           style={{
             flexDirection: 'row',
@@ -177,7 +135,7 @@ export const DomainSelectorScreen = () => {
           ))}
         </View>
 
-        {/* 📊 Selection Feedback */}
+        {/* SELECTION FEEDBACK */}
         <AppText
           variant="bodySmall"
           color={theme.colors.textSecondary}
@@ -187,7 +145,7 @@ export const DomainSelectorScreen = () => {
         </AppText>
       </View>
 
-      {/* 🔘 FOOTER */}
+      {/* FOOTER — fixed button at bottom */}
       <View
         style={{
           paddingHorizontal: theme.spacing.md,
@@ -195,15 +153,18 @@ export const DomainSelectorScreen = () => {
           paddingTop: theme.spacing.sm,
         }}
       >
-        <Pressable>
-          <Button
-            title="View Articles"
-            onPress={handleViewArticles}
-            disabled={selectedDomains.length === 0}
-            style={{ width: '100%' }}
-          />
-        </Pressable>
+        {/* 
+          FIX: Removed outer Pressable wrapper.
+          Button already handles its own press interaction.
+          Wrapping in Pressable with no onPress was redundant.
+        */}
+        <Button
+          title="View Articles"
+          onPress={handleViewArticles}
+          disabled={selectedDomains.length === 0}
+          style={{ width: '100%' }}
+        />
       </View>
     </SafeAreaView>
-  );
-};
+  )
+}
