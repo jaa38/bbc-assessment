@@ -45,10 +45,15 @@ touch .env
 ```
 
 Create `.env` and add your API key here:
-NEWS_API_KEY=YOUR_REAL_NEWSAPI_KEY
 
 ```
 NEWS_API_KEY=your_api_key_here
+```
+
+Run the following command to clear the cache and restart:
+
+```
+npx react-native start --reset-cache
 ```
 
 **4. Install iOS dependencies**
