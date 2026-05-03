@@ -28,7 +28,7 @@ A React Native application that displays the latest news articles from a selecti
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/your-username/BBCNewsApp.git
+git clone https://github.com/jaa38/bbc-assessment.git
 cd BBCNewsApp
 ```
 
