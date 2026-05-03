@@ -25,20 +25,13 @@ A React Native application that displays the latest news articles from a selecti
 
 ### Setup
 
-**1. Clone the repository**
-
-```bash
-git clone https://github.com/jaa38/bbc-assessment.git
-cd BBCNewsApp
-```
-
-**2. Install dependencies**
+**1. Install dependencies**
 
 ```bash
 npm install
 ```
 
-**3. Add your API key**
+**2. Add your API key**
 
 Copy the example env file:
 
@@ -52,13 +45,13 @@ Open `.env` and replace the placeholder with your own key from [newsapi.org](htt
 NEWS_API_KEY=your_real_key_here
 ```
 
-**4. Install iOS dependencies**
+**3. Install iOS dependencies**
 
 ```bash
 cd ios && pod install && cd ..
 ```
 
-**5. Run the app**
+**4. Run the app**
 
 iOS:
 ```bash
