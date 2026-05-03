@@ -43,10 +43,11 @@ npm install
 Copy the example env file and add your key:
 
 ```bash
-cp .env.example .env
+touch .env
 ```
 
-Open `.env` and replace the placeholder:
+Create `.env` and add your API key here:
+NEWS_API_KEY=YOUR_REAL_NEWSAPI_KEY
 
 ```
 NEWS_API_KEY=your_api_key_here
