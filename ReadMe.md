@@ -92,6 +92,7 @@ npm test
 ### Coverage includes
 
 - `ArticleCard` — rendering and formatting logic
+- `formatDate` — relative time formatting (Just now, hours ago, days ago)
 - `DomainSelectorScreen` — selection, UI feedback, navigation
 - `newsService` — API requests, sorting, error handling
 
