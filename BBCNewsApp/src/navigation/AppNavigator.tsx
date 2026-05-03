@@ -1,28 +1,29 @@
 /**
  * @file AppNavigator.tsx
  *
- * Root navigation configuration for the app.
+ * Central navigation configuration for the application.
  *
  * Responsibilities:
- * - Define navigation stack
- * - Type navigation routes (TypeScript safety)
- * - Wrap app with required providers (SafeArea, Navigation)
+ * - Define all app routes and their params
+ * - Configure navigation stack
+ * - Wrap app with providers (SafeArea + NavigationContainer)
  *
- * Design Decisions:
- * - Use Native Stack Navigator for performance
- * - Strongly type navigation params
- * - Disable default headers (custom UI instead)
+ * Design Principles:
+ * - Strong typing via RootStackParamList
+ * - Single source of truth for navigation
+ * - Scalable structure for future screens
  */
 
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react'
+import { NavigationContainer } from '@react-navigation/native'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
-import { DomainSelectorScreen } from '../screens/DomainSelectorScreen';
-import { ArticlesScreen } from '../screens/ArticlesScreen';
+import { DomainSelectorScreen } from '../screens/DomainSelectorScreen'
+import { ArticlesScreen } from '../screens/ArticlesScreen'
+import { ArticleDetailScreen } from '../screens/ArticleDetailScreen'
 
-import { Domain, SortOption } from '../types/news';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Domain, SortOption, Article } from '../types/news'
 
 
 /**
@@ -31,67 +32,51 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
  * Defines all navigation routes and their parameters.
  *
  * Benefits:
- * - Type-safe navigation
- * - Prevents incorrect route usage
- * - Improves developer experience (autocomplete)
+ * - Prevents runtime navigation errors
+ * - Enables autocomplete for navigation
  */
 export type RootStackParamList = {
-  DomainSelector: undefined;
+  DomainSelector: undefined
 
   Articles: {
-    domains: Domain[];
-    sortBy: SortOption;
-  };
-};
+    domains: Domain[]
+    sortBy: SortOption
+  }
+
+  ArticleDetail: {
+    article: Article
+  }
+}
+
+const Stack = createNativeStackNavigator<RootStackParamList>()
 
 
 /**
- * 🚀 Stack Navigator
+ * 🚀 AppNavigator
  *
- * Native stack used for better performance (vs JS stack).
- */
-const Stack = createNativeStackNavigator<RootStackParamList>();
-
-
-/**
- * 📱 AppNavigator
- *
- * Root component that wires up:
- * - Safe area handling (for notches, status bar, etc.)
- * - Navigation container
- * - Screen stack
+ * Entry point for navigation.
  */
 export const AppNavigator = () => {
   return (
-    /**
-     * 🛡️ SafeAreaProvider
-     *
-     * Ensures UI respects device safe areas
-     * (especially important for iOS devices)
-     */
     <SafeAreaProvider>
       <NavigationContainer>
-        <Stack.Navigator
-          /**
-           * 🎨 Global screen options
-           *
-           * headerShown: false → using custom headers
-           */
-          screenOptions={{ headerShown: false }}
-        >
-          {/* 🏠 Domain Selection Screen */}
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen
             name="DomainSelector"
             component={DomainSelectorScreen}
           />
 
-          {/* 📰 Articles Screen */}
           <Stack.Screen
             name="Articles"
             component={ArticlesScreen}
           />
+
+          <Stack.Screen
+            name="ArticleDetail"
+            component={ArticleDetailScreen}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
-  );
-};
+  )
+}
