@@ -20,7 +20,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigationProp } from '../navigation/types';
@@ -30,11 +30,7 @@ import { DomainChip } from '../components/DomainChip';
 import { Button } from '../components/Button';
 import { theme } from '../theme';
 
-import {
-  Domain,
-  ALL_DOMAINS,
-  DOMAIN_LABELS,
-} from '../types/news';
+import { Domain, ALL_DOMAINS, DOMAIN_LABELS } from '../types/news';
 
 /**
  * 🧠 Navigation Type
@@ -70,12 +66,10 @@ export const DomainSelectorScreen = () => {
    * - Keeps logic simple and predictable
    */
   const toggleDomain = useCallback((domain: Domain) => {
-    setSelectedDomains((prev) => {
+    setSelectedDomains(prev => {
       const isSelected = prev.includes(domain);
 
-      return isSelected
-        ? prev.filter((d) => d !== domain)
-        : [...prev, domain];
+      return isSelected ? prev.filter(d => d !== domain) : [...prev, domain];
     });
   }, []);
 
@@ -150,10 +144,7 @@ export const DomainSelectorScreen = () => {
         }}
       >
         {/* 🧠 Screen Title */}
-        <AppText
-          variant="h1"
-          style={{ marginBottom: theme.spacing.sm }}
-        >
+        <AppText variant="h1" style={{ marginBottom: theme.spacing.sm }}>
           Pick your sources
         </AppText>
 
@@ -176,7 +167,7 @@ export const DomainSelectorScreen = () => {
           accessibilityRole="list"
           accessibilityLabel="Available news sources"
         >
-          {ALL_DOMAINS.map((domain) => (
+          {ALL_DOMAINS.map(domain => (
             <DomainChip
               key={domain}
               label={DOMAIN_LABELS[domain]}
@@ -204,12 +195,14 @@ export const DomainSelectorScreen = () => {
           paddingTop: theme.spacing.sm,
         }}
       >
-        <Button
-          title="View Articles"
-          onPress={handleViewArticles}
-          disabled={selectedDomains.length === 0}
-          style={{ width: '100%' }}
-        />
+        <Pressable>
+          <Button
+            title="View Articles"
+            onPress={handleViewArticles}
+            disabled={selectedDomains.length === 0}
+            style={{ width: '100%' }}
+          />
+        </Pressable>
       </View>
     </SafeAreaView>
   );

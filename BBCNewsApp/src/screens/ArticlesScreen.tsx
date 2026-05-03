@@ -22,6 +22,7 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -34,30 +35,21 @@ import { ArticleCard } from '../components/ArticleCard';
 
 import { theme } from '../theme';
 
-import {
-  Article,
-  FetchState,
-  DOMAIN_LABELS,
-  SortOption,
-} from '../types/news';
+import { Article, FetchState, DOMAIN_LABELS, SortOption } from '../types/news';
 
 import { fetchArticles } from '../services/newsService';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { spacing } from '../theme/spacing';
 
+<Ionicons name="home" size={24} color="#000" />;
 /**
  * 🧠 Navigation typing
  */
-type NavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'Articles'
->;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Articles'>;
 
-type RouteProps = RouteProp<
-  RootStackParamList,
-  'Articles'
->;
-
+type RouteProps = RouteProp<RootStackParamList, 'Articles'>;
 
 /**
  * 📰 ArticlesScreen Component
@@ -86,7 +78,6 @@ export const ArticlesScreen = () => {
     status: 'loading',
   });
 
-
   /**
    * 🚀 Load articles from API
    *
@@ -114,7 +105,6 @@ export const ArticlesScreen = () => {
     }
   }, [domains, sortBy]);
 
-
   /**
    * 🔄 Trigger fetch on mount or dependency change
    */
@@ -122,18 +112,10 @@ export const ArticlesScreen = () => {
     loadArticles();
   }, [loadArticles]);
 
-
   /**
    * 🧠 Derived UI values
    */
-  const domainLabels = domains
-    .map((d) => DOMAIN_LABELS[d])
-    .join(', ');
-
-  const headerSubtitle = `${domains.length} ${
-    domains.length === 1 ? 'source' : 'sources'
-  } selected`;
-
+  const domainLabels = domains.map(d => DOMAIN_LABELS[d]).join(', ');
 
   /**
    * 🎨 Render UI
@@ -154,31 +136,66 @@ export const ArticlesScreen = () => {
           borderBottomColor: theme.colors.border,
         }}
       >
-        {/* 🔙 Back Button */}
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          style={{ marginBottom: theme.spacing.sm }}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
-          <AppText variant="body" color={theme.colors.textPrimary}>
-            {'< Back'}
-          </AppText>
-        </TouchableOpacity>
+          {/* LEFT SIDE */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: spacing.md,
+            }}
+          >
+            {/* 🔙 Back Button */}
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={theme.colors.textPrimary}
+              />
+            </Pressable>
 
-        {/* 📊 Selected domains count */}
-        <AppText variant="meta" color={theme.colors.textSecondary}>
-          {headerSubtitle}
-        </AppText>
+            {/* 📰 Title */}
+            <View>
+              <AppText variant="h2" color={theme.colors.textPrimary}>
+                Top Stories
+              </AppText>
+              <AppText variant="caption" color={theme.colors.textSecondary}>
+                {domainLabels}
+              </AppText>
+            </View>
+          </View>
 
-        {/* 🏷️ Selected domain labels */}
-        <AppText variant="caption" color={theme.colors.textSecondary}>
-          {domainLabels}
-        </AppText>
+          {/* 🔄 Refresh ACTION */}
+          <Pressable onPress={loadArticles}>
+            <Ionicons
+              name="refresh-outline"
+              size={24}
+              color={theme.colors.textPrimary}
+            />
+          </Pressable>
+        </View>
+
+        {/* 🔄 SORT TOGGLE */}
+
+        <SortToggle
+          value={sortBy}
+          onChange={setSortBy}
+          style={{
+            marginTop: spacing.md,
+            marginHorizontal: 0, // 🔥 override internal margin
+            width: '100%',
+          }}
+        />
       </View>
 
-      {/* 🔄 SORT TOGGLE */}
-      <SortToggle value={sortBy} onChange={setSortBy} />
+      {/* 🔄 SORT TOGGLE
+      <SortToggle value={sortBy} onChange={setSortBy} /> */}
 
       {/* ⏳ LOADING STATE */}
       {fetchState.status === 'loading' && (
@@ -236,24 +253,19 @@ export const ArticlesScreen = () => {
       {fetchState.status === 'success' && (
         <FlatList
           data={fetchState.articles}
-          keyExtractor={(item, index) =>
-            `${item.url}-${index}`
-          }
-
+          keyExtractor={(item, index) => `${item.url}-${index}`}
           /**
            * 📰 Render each article
            */
           renderItem={({ item }: { item: Article }) => (
             <ArticleCard article={item} />
           )}
-
           /**
            * 📐 Spacing
            */
           contentContainerStyle={{
             paddingBottom: theme.spacing.lg,
           }}
-
           accessibilityLabel="Articles list"
         />
       )}
