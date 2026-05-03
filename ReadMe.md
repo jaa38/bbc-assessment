@@ -40,8 +40,6 @@ npm install
 
 **3. Add your API key**
 
-Copy the example env file and add your key:
-
 ```bash
 touch .env
 ```
