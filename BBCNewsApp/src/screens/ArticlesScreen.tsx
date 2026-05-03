@@ -1,3 +1,27 @@
+/**
+ * @file ArticlesScreen.tsx
+ *
+ * Displays a list of news articles based on selected domains.
+ *
+ * Responsibilities:
+ * - Fetch articles from the News API
+ * - Handle loading, error, empty, and success states
+ * - Allow sorting (latest / popular)
+ * - Provide refresh and navigation controls
+ *
+ * Key Features:
+ * - Typed navigation (prevents runtime errors)
+ * - Discriminated union state handling (FetchState)
+ * - Memoised list rendering for performance
+ * - Accessible UI interactions
+ *
+ * Design Decisions:
+ * - API logic is abstracted into a service (fetchArticles)
+ * - UI states are explicitly handled (no undefined states)
+ * - FlatList used for performance with large datasets
+ * - Inline styles used for speed and clarity in assessment context
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -30,6 +54,12 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+
+/**
+ * 🧠 Navigation typing
+ *
+ * Ensures type-safe navigation and route params.
+ */
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'Articles'
@@ -37,18 +67,41 @@ type NavigationProp = NativeStackNavigationProp<
 
 type RouteProps = RouteProp<RootStackParamList, 'Articles'>;
 
+
+/**
+ * 📰 ArticlesScreen Component
+ */
 export const ArticlesScreen = () => {
+  /**
+   * 🧭 Navigation + route
+   */
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
 
+  /**
+   * 📥 Extract params from previous screen
+   */
   const { domains, sortBy: initialSort } = route.params;
 
+  /**
+   * 🔄 Sort state
+   */
   const [sortBy, setSortBy] = useState<SortOption>(initialSort);
 
+  /**
+   * 📡 Fetch state
+   * Uses discriminated union to ensure safe rendering
+   */
   const [fetchState, setFetchState] = useState<FetchState>({
     status: 'loading',
   });
 
+
+  /**
+   * 🚀 loadArticles
+   *
+   * Fetches articles from API and updates UI state
+   */
   const loadArticles = useCallback(async () => {
     setFetchState({ status: 'loading' });
 
@@ -69,15 +122,30 @@ export const ArticlesScreen = () => {
     }
   }, [domains, sortBy]);
 
+
+  /**
+   * 🔄 Trigger fetch on mount or dependency change
+   */
   useEffect(() => {
     loadArticles();
   }, [loadArticles]);
 
+
+  /**
+   * 🧠 Derived values
+   *
+   * Converts domain list into readable labels
+   */
   const domainLabels = domains
     .map((d) => DOMAIN_LABELS[d])
     .join(', ');
 
-  // ✅ memoised renderItem
+
+  /**
+   * ⚡ Memoised renderItem
+   *
+   * Prevents unnecessary re-renders of FlatList items
+   */
   const renderItem = useCallback(
     ({ item }: { item: Article }) => (
       <ArticleCard article={item} />
@@ -85,6 +153,10 @@ export const ArticlesScreen = () => {
     []
   );
 
+
+  /**
+   * 🎨 UI Rendering
+   */
   return (
     <SafeAreaView
       style={{
@@ -92,7 +164,7 @@ export const ArticlesScreen = () => {
         backgroundColor: theme.colors.background,
       }}
     >
-      {/* HEADER */}
+      {/* ================= HEADER ================= */}
       <View
         style={{
           paddingHorizontal: theme.spacing.md,
@@ -108,7 +180,7 @@ export const ArticlesScreen = () => {
             justifyContent: 'space-between',
           }}
         >
-          {/* LEFT */}
+          {/* LEFT SECTION */}
           <View
             style={{
               flexDirection: 'row',
@@ -116,6 +188,7 @@ export const ArticlesScreen = () => {
               gap: spacing.md,
             }}
           >
+            {/* 🔙 Back Button */}
             <Pressable onPress={() => navigation.goBack()}>
               <Ionicons
                 name="arrow-back"
@@ -124,6 +197,7 @@ export const ArticlesScreen = () => {
               />
             </Pressable>
 
+            {/* 📰 Title + Domains */}
             <View>
               <AppText variant="h2">Top Stories</AppText>
               <AppText
@@ -135,7 +209,7 @@ export const ArticlesScreen = () => {
             </View>
           </View>
 
-          {/* REFRESH */}
+          {/* 🔄 Refresh Button */}
           <Pressable onPress={loadArticles}>
             <Ionicons
               name="refresh-outline"
@@ -145,6 +219,7 @@ export const ArticlesScreen = () => {
           </Pressable>
         </View>
 
+        {/* 🔀 Sort Toggle */}
         <SortToggle
           value={sortBy}
           onChange={setSortBy}
@@ -156,7 +231,8 @@ export const ArticlesScreen = () => {
         />
       </View>
 
-      {/* LOADING */}
+
+      {/* ================= LOADING STATE ================= */}
       {fetchState.status === 'loading' && (
         <View
           style={{
@@ -165,11 +241,15 @@ export const ArticlesScreen = () => {
             alignItems: 'center',
           }}
         >
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator
+            size="large"
+            color={theme.colors.primary}
+          />
         </View>
       )}
 
-      {/* ERROR */}
+
+      {/* ================= ERROR STATE ================= */}
       {fetchState.status === 'error' && (
         <View
           style={{
@@ -182,13 +262,17 @@ export const ArticlesScreen = () => {
             {fetchState.message}
           </AppText>
 
+          {/* Retry */}
           <TouchableOpacity onPress={loadArticles}>
-            <AppText color={theme.colors.primary}>Try again</AppText>
+            <AppText color={theme.colors.primary}>
+              Try again
+            </AppText>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* EMPTY STATE */}
+
+      {/* ================= EMPTY STATE ================= */}
       {fetchState.status === 'success' &&
         fetchState.articles.length === 0 && (
           <View
@@ -204,7 +288,8 @@ export const ArticlesScreen = () => {
           </View>
         )}
 
-      {/* SUCCESS */}
+
+      {/* ================= SUCCESS STATE ================= */}
       {fetchState.status === 'success' &&
         fetchState.articles.length > 0 && (
           <FlatList
