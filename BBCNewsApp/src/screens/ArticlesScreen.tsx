@@ -1,7 +1,3 @@
-/**
- * @file ArticlesScreen.tsx
- */
-
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -27,7 +23,6 @@ import {
   FetchState,
   DOMAIN_LABELS,
   SortOption,
-  Domain,
 } from '../types/news';
 
 import { fetchArticles } from '../services/newsService';
@@ -35,18 +30,12 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-/**
- * ✅ Correct generic typing
- */
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'Articles'
 >;
 
-type RouteProps = RouteProp<
-  RootStackParamList,
-  'Articles'
->;
+type RouteProps = RouteProp<RootStackParamList, 'Articles'>;
 
 export const ArticlesScreen = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -84,12 +73,17 @@ export const ArticlesScreen = () => {
     loadArticles();
   }, [loadArticles]);
 
-  /**
-   * ✅ FIX: Explicit typing prevents "any" error
-   */
-  const domainLabels = (domains as Domain[])
+  const domainLabels = domains
     .map((d) => DOMAIN_LABELS[d])
     .join(', ');
+
+  // ✅ memoised renderItem
+  const renderItem = useCallback(
+    ({ item }: { item: Article }) => (
+      <ArticleCard article={item} />
+    ),
+    []
+  );
 
   return (
     <SafeAreaView
@@ -132,7 +126,10 @@ export const ArticlesScreen = () => {
 
             <View>
               <AppText variant="h2">Top Stories</AppText>
-              <AppText variant="caption" color={theme.colors.textSecondary}>
+              <AppText
+                variant="caption"
+                color={theme.colors.textSecondary}
+              >
                 {domainLabels}
               </AppText>
             </View>
@@ -161,14 +158,26 @@ export const ArticlesScreen = () => {
 
       {/* LOADING */}
       {fetchState.status === 'loading' && (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       )}
 
       {/* ERROR */}
       {fetchState.status === 'error' && (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
           <AppText color={theme.colors.error}>
             {fetchState.message}
           </AppText>
@@ -179,16 +188,34 @@ export const ArticlesScreen = () => {
         </View>
       )}
 
+      {/* EMPTY STATE */}
+      {fetchState.status === 'success' &&
+        fetchState.articles.length === 0 && (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <AppText color={theme.colors.textSecondary}>
+              No articles found for selected sources.
+            </AppText>
+          </View>
+        )}
+
       {/* SUCCESS */}
-      {fetchState.status === 'success' && (
-        <FlatList
-          data={fetchState.articles}
-          keyExtractor={(item, index) => `${item.url}-${index}`}
-          renderItem={({ item }: { item: Article }) => (
-            <ArticleCard article={item} />
-          )}
-        />
-      )}
+      {fetchState.status === 'success' &&
+        fetchState.articles.length > 0 && (
+          <FlatList
+            data={fetchState.articles}
+            keyExtractor={(item) => item.url}
+            renderItem={renderItem}
+            contentContainerStyle={{
+              paddingBottom: theme.spacing.lg,
+            }}
+          />
+        )}
     </SafeAreaView>
   );
 };
