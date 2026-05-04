@@ -49,7 +49,12 @@ export const ArticleDetailScreen = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: theme.spacing.md }}>
         {/* BACK */}
-        <Pressable onPress={() => navigation.goBack()}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
           <Ionicons
             name="arrow-back"
             size={24}
@@ -101,6 +106,8 @@ export const ArticleDetailScreen = () => {
         {/* OPEN LINK */}
         <Pressable
           onPress={openArticle}
+          accessibilityRole="link"
+          accessibilityLabel="Read full article in browser"
           style={{ marginTop: theme.spacing.lg }}
         >
           <AppText color={theme.colors.primary}>Read full article →</AppText>

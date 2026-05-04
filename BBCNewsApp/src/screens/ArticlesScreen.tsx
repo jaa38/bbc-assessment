@@ -15,104 +15,95 @@
  * - Performance optimisation using useCallback
  */
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
   Pressable,
-} from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useNavigation, useRoute } from '@react-navigation/native'
-import { RouteProp } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp } from '@react-navigation/native';
 
-import { AppText } from '../components/AppText'
-import { SortToggle } from '../components/SortToggle'
-import { ArticleCard } from '../components/ArticleCard'
+import { AppText } from '../components/AppText';
+import { SortToggle } from '../components/SortToggle';
+import { ArticleCard } from '../components/ArticleCard';
 
-import { theme } from '../theme'
-import { spacing } from '../theme/spacing'
+import { theme } from '../theme';
+import { spacing } from '../theme/spacing';
 
-import {
-  Article,
-  FetchState,
-  DOMAIN_LABELS,
-  SortOption,
-} from '../types/news'
+import { Article, FetchState, DOMAIN_LABELS, SortOption } from '../types/news';
 
-import { fetchArticles } from '../services/newsService'
-import { RootStackParamList } from '../navigation/AppNavigator'
-import { AppNavigationProp } from '../navigation/types'
+import { fetchArticles } from '../services/newsService';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { AppNavigationProp } from '../navigation/types';
 
-import Ionicons from 'react-native-vector-icons/Ionicons'
-
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 /**
  * 🧠 Navigation typing
  */
-type NavigationProp = AppNavigationProp<'Articles'>
-type RouteProps = RouteProp<RootStackParamList, 'Articles'>
-
+type NavigationProp = AppNavigationProp<'Articles'>;
+type RouteProps = RouteProp<RootStackParamList, 'Articles'>;
 
 export const ArticlesScreen = () => {
   /**
    * 🧭 Navigation + route
    */
-  const navigation = useNavigation<NavigationProp>()
-  const route = useRoute<RouteProps>()
+  const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<RouteProps>();
 
   /**
    * 📥 Params
    */
-  const { domains, sortBy: initialSort } = route.params
+  const { domains, sortBy: initialSort } = route.params;
 
   /**
    * 🔄 State
    */
-  const [sortBy, setSortBy] = useState<SortOption>(initialSort)
+  const [sortBy, setSortBy] = useState<SortOption>(initialSort);
 
   const [fetchState, setFetchState] = useState<FetchState>({
     status: 'loading',
-  })
+  });
 
   /**
    * 🚀 Fetch articles
    */
   const loadArticles = useCallback(async () => {
-    setFetchState({ status: 'loading' })
+    setFetchState({ status: 'loading' });
 
     try {
-      const articles = await fetchArticles(domains, sortBy)
+      const articles = await fetchArticles(domains, sortBy);
 
       setFetchState({
         status: 'success',
         articles,
-      })
+      });
     } catch (error) {
-      console.error('Failed to fetch articles:', error)
+      console.error('Failed to fetch articles:', error);
 
       setFetchState({
         status: 'error',
         message: 'Could not load articles. Please try again.',
-      })
+      });
     }
-  }, [domains, sortBy])
+  }, [domains, sortBy]);
 
   /**
    * 🔄 Fetch on mount / dependency change
    */
   useEffect(() => {
-    loadArticles()
-  }, [loadArticles])
+    loadArticles();
+  }, [loadArticles]);
 
   /**
    * 🧠 Derived values
    */
-  const domainLabels = domains
-    .map((d) => DOMAIN_LABELS[d])
-    .join(', ')
+  const domainLabels = domains.map(d => DOMAIN_LABELS[d]).join(', ');
 
   /**
    * ⚡ Optimised renderItem
@@ -120,15 +111,13 @@ export const ArticlesScreen = () => {
   const renderItem = useCallback(
     ({ item }: { item: Article }) => (
       <Pressable
-        onPress={() =>
-          navigation.navigate('ArticleDetail', { article: item })
-        }
+        onPress={() => navigation.navigate('ArticleDetail', { article: item })}
       >
         <ArticleCard article={item} />
       </Pressable>
     ),
-    [navigation]
-  )
+    [navigation],
+  );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -185,10 +174,10 @@ export const ArticlesScreen = () => {
       {fetchState.status === 'success' && (
         <FlatList
           data={fetchState.articles}
-          keyExtractor={(item) => item.url}
+          keyExtractor={item => item.url}
           renderItem={renderItem}
         />
       )}
     </SafeAreaView>
-  )
-}
+  );
+};
