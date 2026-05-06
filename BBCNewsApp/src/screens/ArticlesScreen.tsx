@@ -112,6 +112,9 @@ export const ArticlesScreen = () => {
     ({ item }: { item: Article }) => (
       <Pressable
         onPress={() => navigation.navigate('ArticleDetail', { article: item })}
+        accessibilityRole="button"
+        accessibilityLabel={`Read article: ${item.title}`}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <ArticleCard article={item} />
       </Pressable>
@@ -138,7 +141,12 @@ export const ArticlesScreen = () => {
         >
           {/* LEFT */}
           <View style={{ flexDirection: 'row', gap: spacing.md }}>
-            <Pressable onPress={() => navigation.goBack()}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <Ionicons name="arrow-back" size={24} />
             </Pressable>
 
@@ -149,7 +157,12 @@ export const ArticlesScreen = () => {
           </View>
 
           {/* REFRESH */}
-          <Pressable onPress={loadArticles}>
+          <Pressable
+            onPress={loadArticles}
+            accessibilityRole="button"
+            accessibilityLabel="Refresh articles"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
             <Ionicons name="refresh-outline" size={24} />
           </Pressable>
         </View>
