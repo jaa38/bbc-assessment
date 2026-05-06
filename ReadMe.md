@@ -10,6 +10,7 @@ A React Native application that displays the latest news articles from a selecti
 - Select one or more domains to build a custom news feed
 - View the 10 latest articles per selection
 - Sort articles by latest or most popular
+- Tap any article to view full details and open the original source
 - Accessible on iOS and Android
 
 ---
@@ -72,31 +73,26 @@ npx react-native run-android
 
 ---
 
-## 🧪 Testing
+## Testing
 
-Testing is implemented using:
-
-* **Jest**
-* **@testing-library/react-native**
-
-## Running tests
+Testing is implemented using **Jest** and **@testing-library/react-native**.
 
 ```bash
 npm test
 ```
 
-### Coverage includes
+### Coverage
 
-- `ArticleCard` — rendering and formatting logic
-- `formatDate` — relative time formatting (Just now, hours ago, days ago)
-- `DomainSelectorScreen` — selection, UI feedback, navigation
-- `newsService` — API requests, sorting, error handling
+- `ArticleCard` — renders title, source, description, and handles null fields
+- `formatDate` — relative time formatting: Just now, hours ago, days ago
+- `DomainSelectorScreen` — chip selection, counter updates, navigation with correct params
+- `newsService` — API request construction, domain joining, sort mapping, error normalisation
 
-### Testing Strategy
+### Testing strategy
 
-This project focuses on unit and component testing as required by the brief.
+Unit and component tests cover all core logic and UI behaviour. The service layer is tested with a mocked axios instance to ensure no real network calls are made during testing.
 
-In a production environment, this would be extended with end-to-end testing (e.g. Detox) to validate full user flows.
+In a production environment this would be extended with Detox end-to-end tests to validate full user flows on a real device or simulator.
 
 ---
 
@@ -109,21 +105,18 @@ src/
 ├── components/       # Reusable UI components
 ├── screens/          # Full screens
 ├── services/         # API layer
-├── navigation/       # Navigation config
+├── navigation/       # Navigation config and types
 ├── theme/            # Design tokens
 └── types/            # TypeScript types
 ```
 
-- Screens handle layout and user flow
-- Components are reusable UI primitives
-- Services encapsulate API logic
-- Components remain independent of API and navigation
+Screens handle layout and user flow. Components are reusable UI primitives. Services encapsulate all API logic. Components have no knowledge of the API or navigation.
 
 ### TypeScript throughout
 
-Strict mode is enabled across the project.
+Strict mode is enabled. Every component prop, API response, navigation param, and async state is typed.
 
-A discriminated union (FetchState) is used to model async state:
+The most important type is `FetchState` — a discriminated union that models every possible state of an API call explicitly:
 
 ```typescript
 type FetchState =
@@ -133,74 +126,69 @@ type FetchState =
   | { status: 'error'; message: string }
 ```
 
-This ensures every state is handled explicitly at compile time, reducing runtime errors.
+The TypeScript compiler forces every state to be handled. Unhandled states are caught at compile time, not at runtime when a user encounters them.
 
-## 🔌 API
+### Navigation typing
 
-* Uses **NewsAPI (Everything endpoint)**
-* Filters by selected domains
-* Supports sorting
-* Handles API and network errors gracefully
+A shared `AppNavigationProp<T>` generic type is defined once in `navigation/types.ts` and reused across all screens. This prevents runtime navigation errors and enables autocomplete for route names and params.
 
 ### Axios for API calls
 
-Axios is used for:
+Axios is used instead of fetch for cleaner error handling and more readable request configuration. The service layer is kept thin — one function, one responsibility.
 
-- Clearer error handling
-- Cleaner request configuration
+Errors are normalised at the service boundary so the UI never receives raw API errors:
 
-The `domains` parameter is mapped directly to the API and supports multi-domain selection in a single request.
+- `ECONNABORTED` → timeout message
+- `401` → invalid API key message
+- `429` → rate limit message
+- `500+` → server error message
+- Fallback → generic user-friendly message
 
 ### Design system
 
-A token-based design system ensures consistency:
-
-- Colours
-- Spacing
-- Radius
-- Typography
-
-All values are centralised and reused across components.
+A token-based design system covers colours, spacing, radius, and typography. Every value is defined once and referenced throughout. Changing a token updates every component that uses it.
 
 ### Accessibility
 
-- `accessibilityRole` on every interactive element
-- `accessibilityLabel` on all buttons and chips
+- `accessibilityRole` on every interactive element including article list items, back buttons, and refresh
+- `accessibilityLabel` on all buttons, chips, and icon-based interactions
 - `accessibilityState` on chips to communicate selected state to screen readers
-- `accessibilityLiveRegion="polite"` on the selection counter so screen readers announce changes automatically
-- `accessibilityLabel` on the loading indicator
+- `accessibilityLiveRegion="polite"` on the selection counter so changes are announced automatically
+- `hitSlop` on small icon buttons to ensure adequate touch targets
+- Font scaling enabled via `allowFontScaling` and `maxFontSizeMultiplier`
 - Minimum touch target height of 36–48pt on all interactive elements
-- Font scaling enabled
 
 ---
 
-### Key Decisions
+## Key decisions
 
-* **Separation of concerns**: UI, navigation, and data-fetching are decoupled
-* **Design system**: Centralised theme ensures consistency and scalability
-* **Typed navigation**: Prevents runtime navigation errors
-* **Discriminated unions (`FetchState`)**: Ensures safe async state handling
-* **Reusable components**: Button, DomainChip, SortToggle, ArticleCard
+**Separation of concerns** — UI, navigation, and data-fetching are fully decoupled.
+
+**Discriminated unions** — FetchState ensures type-safe async state handling with no implicit undefined states.
+
+**Error normalisation** — Raw API errors are caught in the service layer and returned as user-friendly messages. The UI never exposes internal error details.
+
+**Client-side sort** — Articles are sorted client-side after the API response as a belt-and-braces measure. The News API free tier can return inconsistent ordering. For `latest`, articles are sorted by `publishedAt` descending. For `popular`, the API ordering is preserved.
+
+**Defensive API check** — The service validates that `response.data.articles` exists before returning. This prevents runtime crashes if the API returns an unexpected response shape.
+
+**ArticleDetail screen** — Added beyond the brief because without it the app has a dead end. A user sees a headline with no path to the full article. The detail screen shows all available content and provides a direct link to the source via `Linking.openURL`.
 
 ---
 
 ## Trade-offs and limitations
 
-**No pagination** — limited to 10 articles per the task
+**No pagination** — The task specifies 10 articles. Infinite scroll was not implemented to keep the scope focused.
 
-**No caching** — data fetched on each navigation
+**No caching** — Articles are fetched fresh on every navigation to the ArticlesScreen. Caching was not added as it was not in the requirements.
 
-**No offline support** — Articles are fetched fresh on every navigation to the Articles screen. Caching was not added as it was not in the requirements.
+**No offline support** — Requires a network connection. Offline handling would require a local caching layer.
 
-**Sort resets on back navigation** — When a user returns to the Domain Selector and navigates forward again, sort resets to Latest. This is intentional — a fresh selection should start with the default sort.
+**Sort resets on back navigation** — When a user returns to the Domain Selector and navigates forward again, sort resets to Latest. This is intentional — a fresh domain selection should start with the default sort.
 
-**News API free tier** — The free tier allows 100 requests per day and restricts some endpoints. Articles older than 30 days are not available. The `everything` endpoint is used as recommended in the task brief.
+**System font used instead of Inter** — Inter requires manual native font linking which adds build complexity beyond the scope of this assessment. The system font (San Francisco on iOS, Roboto on Android) provides the same clean aesthetic with zero configuration overhead.
 
-**No global state** - kept simple with React hooks
-
-* Inline styles used in places for speed over strict consistency
-* No caching layer (simpler implementation, no offline support)
-* Sorting handled partly in UI for clarity over abstraction
+**News API free tier** — Limits requests to 100 per day. Articles older than 30 days are not available. Article content is truncated at 200 characters. The `everything` endpoint is used as recommended in the task brief.
 
 ---
 
@@ -208,17 +196,17 @@ All values are centralised and reused across components.
 
 **Known limitations**
 
-- The News API free tier limits requests to 100 per day
+- News API free tier: 100 requests per day
 - Some domains return fewer than 10 articles depending on recent publishing activity
-- Article content is truncated (API limitation)
+- Article content truncated at 200 characters (API limitation)
 
 **Next steps with more time**
 
-- Implement pull-to-refresh on the articles list
-- Add skeleton loading screens instead of a spinner
+- Pull-to-refresh on the articles list
+- Skeleton loading screens instead of an activity indicator
 - Persist selected domains between sessions using AsyncStorage
-- Add Detox end-to-end tests for the full user journey
-- Set up CI with GitHub Actions to run tests on every pull request
+- Detox end-to-end tests for the full user journey
+- CI with GitHub Actions to run tests on every pull request
 
 ---
 
@@ -227,25 +215,28 @@ All values are centralised and reused across components.
 ```
 BBCNewsApp/
 ├── __mocks__/
-│   └── env.js                    # Mock API key for tests
+│   └── env.js                        # Mock API key for tests
 ├── __tests__/
 │   ├── ArticleCard.test.tsx
 │   ├── DomainSelectorScreen.test.tsx
+│   ├── formatDate.test.ts
 │   └── newsService.test.ts
 ├── src/
 │   ├── components/
-│   │   ├── AppText.tsx            # Typography component
-│   │   ├── ArticleCard.tsx        # Single article display
-│   │   ├── Button.tsx             # Primary and secondary button
-│   │   ├── DomainChip.tsx         # Selectable domain pill
-│   │   └── SortToggle.tsx         # Latest / Popular toggle
+│   │   ├── AppText.tsx               # Typography component
+│   │   ├── ArticleCard.tsx           # Article preview card
+│   │   ├── Button.tsx                # Primary and secondary button
+│   │   ├── DomainChip.tsx            # Selectable domain pill
+│   │   └── SortToggle.tsx            # Latest / Popular toggle
 │   ├── navigation/
-│   │   └── AppNavigator.tsx       # Stack navigator with typed params
+│   │   ├── AppNavigator.tsx          # Stack navigator with typed params
+│   │   └── types.ts                  # Shared AppNavigationProp generic
 │   ├── screens/
-│   │   ├── DomainSelectorScreen.tsx
-│   │   └── ArticlesScreen.tsx
+│   │   ├── DomainSelectorScreen.tsx  # Domain selection
+│   │   ├── ArticlesScreen.tsx        # Article list
+│   │   └── ArticleDetailScreen.tsx   # Article detail with external link
 │   ├── services/
-│   │   └── newsService.ts         # Axios API calls
+│   │   └── newsService.ts            # Axios API calls with error normalisation
 │   ├── theme/
 │   │   ├── colors.ts
 │   │   ├── index.ts
@@ -254,8 +245,8 @@ BBCNewsApp/
 │   │   ├── textStyles.ts
 │   │   └── typography.ts
 │   └── types/
-│       ├── env.d.ts
-│       └── news.ts                # All TypeScript types
+│       ├── env.d.ts                  # @env module declaration
+│       └── news.ts                   # All TypeScript types
 ├── .env.example
 ├── App.tsx
 ├── babel.config.js
@@ -264,22 +255,14 @@ BBCNewsApp/
 
 ---
 
-## ⚡ Performance Considerations
+## Performance
 
-* `FlatList` used for efficient list rendering
-* Components structured to support memoization if scaling increases
-
-
-## Feedback on the task
-
-The task was well scoped and engaging. The hint around the News API domains parameter helped guide a clean multi-select implementation. With more time, I would extend the app with a detail screen and end-to-end testing.
+- `FlatList` with `keyExtractor` for efficient list rendering
+- `useCallback` on `renderItem` to prevent function recreation on every render
+- `useCallback` on event handlers passed to memoisation-ready components
 
 ---
 
-## 🙌 Conclusion
+## Feedback on the task
 
-This application demonstrates:
-
-* Solid React Native engineering principles
-* Thoughtful UX and accessibility design
-* A scalable and extensible architecture
+The task was well scoped and engaging. The hint around the `domains` parameter in the News API docs helped guide a clean multi-domain architecture. The most interesting engineering decision was the error normalisation layer in the service — making sure the UI always receives a meaningful, user-friendly message regardless of what the API returns.
